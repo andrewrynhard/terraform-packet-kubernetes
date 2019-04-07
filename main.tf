@@ -40,6 +40,28 @@ locals {
   master_count = 3
 }
 
+resource "packet_vlan" "infrastructure" {
+  description = "Infrastructure VLAN"
+  facility    = "${var.packet_facility}"
+  project_id  = "${var.project_id}"
+}
+
+resource "packet_port_vlan_attachment" "masters" {
+  count = "${local.master_count}"
+
+  device_id = "${element(packet_device.master.*.id, count.index)}"
+  vlan_vnid = "${packet_vlan.infrastructure.vxlan}"
+  port_name = "eth1"
+}
+
+resource "packet_port_vlan_attachment" "workers" {
+  count = "${var.worker_count}"
+
+  device_id = "${element(packet_device.worker.*.id, count.index)}"
+  vlan_vnid = "${packet_vlan.infrastructure.vxlan}"
+  port_name = "eth1"
+}
+
 resource "packet_reserved_ip_block" "masters" {
   project_id = "${var.project_id}"
   facility   = "${var.packet_facility}"
@@ -59,7 +81,7 @@ resource "packet_device" "master" {
   hostname         = "${format("master-%d", count.index + 1)}"
   operating_system = "custom_ipxe"
   plan             = "${var.packet_master_type}"
-  network_type     = "layer3"
+  network_type     = "hybrid"
   ipxe_script_url  = "http://${var.ipxe_endpoint}:8080/boot.ipxe"
   always_pxe       = "true"
   facilities       = ["${var.packet_facility}"]
@@ -76,6 +98,8 @@ networking:
       cidr: ${cidrhost(packet_reserved_ip_block.masters.cidr_notation,count.index)}/32
     - interface: eth0
       dhcp: true
+    - interface: eth0
+      cidr: 192.168.1.${count.index}
 install:
   wipe: false
   force: true
@@ -100,7 +124,7 @@ resource "packet_device" "worker" {
   hostname         = "${format("worker-%d", count.index + 1)}"
   operating_system = "custom_ipxe"
   plan             = "${var.packet_worker_type}"
-  network_type     = "layer3"
+  network_type     = "hybrid"
   ipxe_script_url  = "http://${var.ipxe_endpoint}:8080/boot.ipxe"
   always_pxe       = "true"
   facilities       = ["${var.packet_facility}"]

@@ -12,6 +12,10 @@ variable "packet_master_type" {
   default = "t1.small.x86"
 }
 
+variable "master_count" {
+  default = "3"
+}
+
 variable "worker_count" {
   default = "1"
 }
