@@ -29,3 +29,5 @@ variable "pod_subnet" {
 variable "service_subnet" {
   default = "10.96.0.1/12"
 }
+
+variable "talos_version" {}

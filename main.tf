@@ -82,12 +82,12 @@ install:
   boot:
     device: /dev/sda
     size: 1024000000
-    kernel: http://${var.ipxe_endpoint}:8080/assets/talos/v0.1.0-alpha.19/vmlinuz
-    initramfs: http://${var.ipxe_endpoint}:8080/assets/talos/v0.1.0-alpha.19/initramfs.xz
+    kernel: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/vmlinuz
+    initramfs: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/initramfs.xz
   root:
     device: /dev/sda
     size: 2048000000
-    rootfs: http://${var.ipxe_endpoint}:8080/assets/talos/v0.1.0-alpha.19/rootfs.tar.gz
+    rootfs: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/rootfs.tar.gz
   data:
     device: /dev/sda
     size: 4096000000
@@ -116,12 +116,12 @@ install:
   boot:
     device: /dev/sda
     size: 1024000000
-    kernel: http://${var.ipxe_endpoint}:8080/assets/talos/v0.1.0-alpha.19/vmlinuz
-    initramfs: http://${var.ipxe_endpoint}:8080/assets/talos/v0.1.0-alpha.19/initramfs.xz
+    kernel: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/vmlinuz
+    initramfs: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/initramfs.xz
   root:
     device: /dev/sda
     size: 2048000000
-    rootfs: http://${var.ipxe_endpoint}:8080/assets/talos/v0.1.0-alpha.19/rootfs.tar.gz
+    rootfs: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/rootfs.tar.gz
   data:
     device: /dev/sda
     size: 4096000000
