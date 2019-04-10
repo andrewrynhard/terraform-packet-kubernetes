@@ -131,7 +131,7 @@ EOF
 }
 
 resource "packet_device" "ingress" {
-  count = "${var.worker_count}"
+  count = "${var.ingress_count}"
 
   hostname         = "${format("ingress-%d", count.index + 1)}"
   operating_system = "custom_ipxe"
