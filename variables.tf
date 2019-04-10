@@ -8,12 +8,20 @@ variable "packet_worker_type" {
   default = "t1.small.x86"
 }
 
+variable "packet_ingress_type" {
+  default = "t1.small.x86"
+}
+
 variable "packet_master_type" {
   default = "t1.small.x86"
 }
 
 variable "worker_count" {
   default = "1"
+}
+
+variable "ingress_count" {
+  default = "0"
 }
 
 variable "cluster_name" {}

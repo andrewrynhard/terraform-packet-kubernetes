@@ -5,8 +5,8 @@ module "security" {
   talos_context = "${var.cluster_name}"
 }
 
-module "configuration" {
-  source = "github.com/talos-systems/terraform-talos-configuration"
+module "master_userdata" {
+  source = "github.com/talos-systems/terraform-talos-configuration/masters"
 
   "cluster_name"               = "${var.cluster_name}"
   "trustd_password"            = "${module.security.trustd_password}"
@@ -34,6 +34,42 @@ module "configuration" {
   "container_network_interface_plugin" = "${var.container_network_interface}"
   "service_subnet"                     = "${var.service_subnet}"
   "talos_ca_key"                       = "${module.security.talos_ca_key}"
+}
+
+module "worker_userdata" {
+  source = "github.com/talos-systems/terraform-talos-configuration/workers"
+
+  "trustd_password" = "${module.security.trustd_password}"
+  "trustd_username" = "${module.security.trustd_username}"
+
+  "trustd_endpoints" = [
+    "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,0)}",
+    "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,1)}",
+    "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,2)}",
+  ]
+
+  "kubernetes_token"                   = "${module.security.kubeadm_token}"
+  "api_server_endpoint"                = "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,0)}"
+  "container_network_interface_plugin" = "${var.container_network_interface}"
+  "node_role"                          = "worker"
+}
+
+module "ingress_userdata" {
+  source = "github.com/talos-systems/terraform-talos-configuration/workers"
+
+  "trustd_password" = "${module.security.trustd_password}"
+  "trustd_username" = "${module.security.trustd_username}"
+
+  "trustd_endpoints" = [
+    "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,0)}",
+    "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,1)}",
+    "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,2)}",
+  ]
+
+  "kubernetes_token"                   = "${module.security.kubeadm_token}"
+  "api_server_endpoint"                = "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,0)}"
+  "container_network_interface_plugin" = "${var.container_network_interface}"
+  "node_role"                          = "ingress"
 }
 
 locals {
@@ -68,7 +104,7 @@ resource "packet_device" "master" {
 
   user_data = <<EOF
 #!talos
-${module.configuration.masters[count.index]}
+${module.master_userdata.userdata[count.index]}
 networking:
   os:
     devices:
@@ -76,6 +112,40 @@ networking:
       cidr: ${cidrhost(packet_reserved_ip_block.masters.cidr_notation,count.index)}/32
     - interface: eth0
       dhcp: true
+install:
+  wipe: false
+  force: true
+  boot:
+    device: /dev/sda
+    size: 1024000000
+    kernel: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/vmlinuz
+    initramfs: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/initramfs.xz
+  root:
+    device: /dev/sda
+    size: 2048000000
+    rootfs: http://${var.ipxe_endpoint}:8080/assets/talos/${var.talos_version}/rootfs.tar.gz
+  data:
+    device: /dev/sda
+    size: 4096000000
+EOF
+}
+
+resource "packet_device" "ingress" {
+  count = "${var.worker_count}"
+
+  hostname         = "${format("ingress-%d", count.index + 1)}"
+  operating_system = "custom_ipxe"
+  plan             = "${var.packet_worker_type}"
+  network_type     = "layer3"
+  ipxe_script_url  = "http://${var.ipxe_endpoint}:8080/boot.ipxe"
+  always_pxe       = "true"
+  facilities       = ["${var.packet_facility}"]
+  project_id       = "${var.project_id}"
+  billing_cycle    = "hourly"
+
+  user_data = <<EOF
+#!talos
+${module.ingress_userdata.userdata}
 install:
   wipe: false
   force: true
@@ -109,7 +179,7 @@ resource "packet_device" "worker" {
 
   user_data = <<EOF
 #!talos
-${module.configuration.worker}
+${module.worker_userdata.userdata}
 install:
   wipe: false
   force: true
