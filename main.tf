@@ -70,6 +70,7 @@ module "ingress_userdata" {
   "api_server_endpoint"                = "${cidrhost(packet_reserved_ip_block.masters.cidr_notation,0)}"
   "container_network_interface_plugin" = "${var.container_network_interface}"
   "node_role"                          = "ingress"
+  "node_taints"                        = "[{\"key\": \"dedicated\", \"value\": \"ingress\", \"effect\": \"NoSchedule\"}]"
 }
 
 locals {
