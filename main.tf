@@ -135,7 +135,7 @@ resource "packet_device" "ingress" {
 
   hostname         = "${format("ingress-%d", count.index + 1)}"
   operating_system = "custom_ipxe"
-  plan             = "${var.packet_worker_type}"
+  plan             = "${var.packet_ingress_type}"
   network_type     = "layer3"
   ipxe_script_url  = "http://${var.ipxe_endpoint}:8080/boot.ipxe"
   always_pxe       = "true"
