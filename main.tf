@@ -98,7 +98,7 @@ resource "packet_device" "master" {
   plan             = "${var.packet_master_type}"
   network_type     = "layer3"
   ipxe_script_url  = "http://${var.ipxe_endpoint}:8080/boot.ipxe"
-  always_pxe       = "true"
+  always_pxe       = "false"
   facilities       = ["${var.packet_facility}"]
   project_id       = "${var.project_id}"
   billing_cycle    = "hourly"
@@ -139,7 +139,7 @@ resource "packet_device" "ingress" {
   plan             = "${var.packet_ingress_type}"
   network_type     = "layer3"
   ipxe_script_url  = "http://${var.ipxe_endpoint}:8080/boot.ipxe"
-  always_pxe       = "true"
+  always_pxe       = "false"
   facilities       = ["${var.packet_facility}"]
   project_id       = "${var.project_id}"
   billing_cycle    = "hourly"
@@ -173,7 +173,7 @@ resource "packet_device" "worker" {
   plan             = "${var.packet_worker_type}"
   network_type     = "layer3"
   ipxe_script_url  = "http://${var.ipxe_endpoint}:8080/boot.ipxe"
-  always_pxe       = "true"
+  always_pxe       = "false"
   facilities       = ["${var.packet_facility}"]
   project_id       = "${var.project_id}"
   billing_cycle    = "hourly"
